@@ -1,6 +1,6 @@
 # Commerce Intelligence Platform
 
-**Portfolio project · Analytics Engineering · Synthetic data only**
+**Commerce analytics · Python, PostgreSQL and dbt · Synthetic data only**
 
 [![Python and dbt checks](https://github.com/dutuvalentin16-dev/commerce-intelligence/actions/workflows/ci.yml/badge.svg)](https://github.com/dutuvalentin16-dev/commerce-intelligence/actions/workflows/ci.yml)
 
@@ -12,9 +12,9 @@ also passed on Ubuntu / Python 3.11: [verified CI run](https://github.com/dutuva
 Read the [case study](docs/case-study.md), [model contracts](docs/data-model.md),
 [10-minute demo](docs/demo-guide.md).
 
-An end-to-end ecommerce analytics pipeline built to demonstrate the skills required for a junior Data Analytics / Analytics Engineer role: Python ingestion, PostgreSQL, SQL, dbt staging and aggregate transformations, automated data tests, GitHub Actions and a Streamlit dashboard.
+An end-to-end ecommerce analytics pipeline with Python ingestion, PostgreSQL, dimensional dbt models, aggregate transformations, automated data tests, GitHub Actions and a Streamlit dashboard.
 
-> **Important:** This is a learning/portfolio project, NOT production experience, NOT real business performance, and not affiliated with any employer. All customer/order/session data are synthetic. Monetary values use fictional RON.
+> All customer, order and session data are synthetic. Monetary values use fictional RON; reported results describe the generated dataset, not actual business performance.
 
 ## Online demo and local application
 
@@ -177,7 +177,7 @@ The generator ensures a single order at most per session in its sample data, but
 
 ## Current scope and next iteration
 
-This version is a verified personal portfolio demo: full and incremental ingestion, dimensional models, tested dbt
+The verified system includes: full and incremental ingestion, dimensional models, tested dbt
 reporting, independent metric reconciliation, a reporting UI and automated CI. It can
 be explored through the public demo and reproduced locally using the documented setup.
 
@@ -185,13 +185,12 @@ The next engineering milestones are a licensed public source and persisted run m
 integration, Dagster, cohort analysis and anomaly detection remain future work. None
 of these capabilities is claimed by the current demo.
 
-A passing pipeline demonstrates implementation. The author should also practice the
-[walkthrough](docs/demo-guide.md) and explain the modeling and testing decisions.
+The [walkthrough](docs/demo-guide.md) describes reproducible validation and the modeling decisions.
 
-## Development approach
+## Verification approach
 
-This personal project was developed with AI assistance. Metric contracts, independent
-source reconciliation, automated tests and CI provide inspectable implementation evidence.
+Metric contracts, independent source reconciliation, automated tests and CI provide
+inspectable evidence of data correctness.
 
 ## Security and privacy
 

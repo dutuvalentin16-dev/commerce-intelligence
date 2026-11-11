@@ -1,4 +1,4 @@
-"""Portfolio reporting workspace backed by tested dbt analytics marts."""
+"""Commerce reporting workspace backed by tested dbt analytics marts."""
 from __future__ import annotations
 
 import os
@@ -143,7 +143,7 @@ with st.sidebar:
         query.clear()
         st.rerun()
     st.markdown('<div class="sidebar-footer"><div class="sidebar-avatar">CI</div><div>'
-                '<strong>Portfolio workspace</strong><p>Commerce Intelligence Platform</p></div></div>', unsafe_allow_html=True)
+                '<strong>Reporting workspace</strong><p>Commerce Intelligence Platform</p></div></div>', unsafe_allow_html=True)
 
 try:
     daily = query("SELECT * FROM analytics.mart_daily_sales ORDER BY order_date")
@@ -322,7 +322,7 @@ if view == "Metric guide":
                     "not lifetime retention. Dates use UTC; revenue is grouped by order date, sessions by session date.")
         st.markdown("**Limitations:** synthetic data and fictional RON. Cancelled and refunded orders contribute zero. "
                     "No partial refund, tax or shipping accounting. Product margin is not net profit. "
-                    "No external source, incremental ingestion or anomaly detection has been implemented yet.")
+                    "Incremental ingestion supports ordered synthetic batches; dbt models rebuild fully. No external source or anomaly detection is implemented.")
 
-st.markdown('<div class="footer"><span>COMMERCE INTELLIGENCE · PERSONAL PORTFOLIO PROJECT</span>'
+st.markdown('<div class="footer"><span>COMMERCE INTELLIGENCE · VERIFIED REPORTING</span>'
             '<span>Synthetic data · Fictional RON · Data cached for up to 60 seconds</span></div>', unsafe_allow_html=True)
