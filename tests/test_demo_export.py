@@ -11,8 +11,12 @@ def test_export_rejects_incomplete_or_failed_build(tmp_path, monkeypatch, status
     monkeypatch.chdir(tmp_path)
     (tmp_path / 'target').mkdir()
     (tmp_path / 'target/run_results.json').write_text(json.dumps({
-        'results': [{'status': status} for status in statuses],
+        'results': [{'unique_id': f'model.example.m{i}', 'status': status}
+                    for i, status in enumerate(statuses)],
     }))
+    (tmp_path / 'target/manifest.json').write_text(json.dumps({'nodes': {
+        f'model.example.m{i}': {'resource_type': 'model'} for i in range(42)
+    }}))
     output = tmp_path / 'demo/data.json'
     with pytest.raises(ValueError, match='successful complete dbt build'):
         export(output)

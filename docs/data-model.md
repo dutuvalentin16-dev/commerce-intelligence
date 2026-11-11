@@ -28,14 +28,21 @@ channel model pre-aggregation can support multiple orders once that source contr
 | stg_sessions | session | Derive UTC session date |
 | stg_orders | order | Derive UTC order date |
 | stg_order_items | order item | Calculate quantity × unit price |
-| int_orders_enriched | order | Sum items; recognize revenue for paid status only |
+| dim_customers | customer_id (PK) | Current customer attributes, Type 1 |
+| dim_products | product_id (PK) | Current product attributes and cost, Type 1 |
+| fct_orders | order_id (PK) | Customer FK, session ID, UTC date; item totals and paid-only revenue |
+| fct_order_items | order_item_id (PK) | Order/customer/product FKs; quantity, price, line value, paid-only revenue |
+| int_orders_enriched | order | Compatibility view over fct_orders |
 | mart_daily_sales | UTC order date | Counts by status, revenue, paid-order AOV |
 | mart_channel_performance | acquisition channel | Sessions, converted sessions, revenue, conversion |
 | mart_category_performance | product category | Paid units, revenue, estimated product margin |
 | mart_customer_repeat | entire dataset (one row) | Paying/repeat customers and repeat buyer rate |
 
-These are not yet fact/dimension models. The intermediate inner join assumes at least one
-item per order, enforced by `assert_orders_have_items`. A missing-item order must fail checks
+Facts use durable source IDs as natural keys; surrogate keys add no benefit without
+versioned dimensions. A separate dim_date is deferred: current reports need only UTC
+calendar dates, and chart zero-filling already handles missing days.
+The order fact inner join assumes at least one item per order, enforced by
+`assert_orders_have_items` and ingestion validation. A missing-item order must fail checks
 rather than be treated as a legitimate zero-value order.
 
 ## Consumer contracts

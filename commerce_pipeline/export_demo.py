@@ -16,7 +16,13 @@ from commerce_pipeline.verify_metrics import verify
 
 def export(output: Path) -> None:
     results = json.loads(Path('target/run_results.json').read_text())['results']
-    if len(results) != 42 or any(r['status'] not in ('success', 'pass') for r in results):
+    manifest = json.loads(Path('target/manifest.json').read_text())
+    expected = {key for key, node in manifest['nodes'].items()
+                if node['resource_type'] in ('model', 'test')
+                and node.get('config', {}).get('materialized') != 'ephemeral'}
+    actual = [r.get('unique_id') for r in results]
+    if (not expected or len(actual) != len(expected) or set(actual) != expected
+            or any(r['status'] not in ('success', 'pass') for r in results)):
         raise ValueError('Run a successful complete dbt build before exporting the demo')
     baseline = verify(Path('data/sample'))
     config = {'host': os.getenv('PGHOST', 'localhost'), 'port': int(os.getenv('PGPORT', '5434')),

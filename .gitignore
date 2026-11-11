@@ -12,3 +12,5 @@ logs/
 dbt_packages/
 .DS_Store
 demo/data.json
+data/incremental/
+.user.yml

@@ -6,6 +6,8 @@ model-paths: ["models"]
 test-paths: ["tests"]
 models:
   commerce_intelligence:
+    star:
+      +materialized: table
     staging:
       +materialized: view
     intermediate:

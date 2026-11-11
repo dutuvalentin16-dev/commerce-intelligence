@@ -44,6 +44,14 @@ jobs:
         env:
           COMMERCE_INTEGRATION_TESTS: '1'
         run: python -m pytest -q tests/test_ingestion_integration.py
+      - name: Verify synthetic incremental changes and rerun
+        run: |
+          python -m commerce_pipeline.simulate_incremental
+          python -m commerce_pipeline.ingest --directory data/incremental/baseline
+          python -m commerce_pipeline.ingest --mode incremental --directory data/incremental/batch
+          python -m commerce_pipeline.ingest --mode incremental --directory data/incremental/batch
+          dbt build --profiles-dir .
+          python -m commerce_pipeline.verify_metrics --directory data/incremental/expected
       - name: Generate fake data
         run: python -m commerce_pipeline.generate_sample_data
       - name: Ingest raw files

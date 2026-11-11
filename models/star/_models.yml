@@ -1,0 +1,54 @@
+version: 2
+models:
+  - name: dim_customers
+    description: "Type 1 current customer; natural customer_id key."
+    columns:
+      - name: customer_id
+        data_tests: [unique, not_null]
+  - name: dim_products
+    description: "Type 1 current product; natural product_id key. Historical cost is not retained."
+    columns:
+      - name: product_id
+        data_tests: [unique, not_null]
+  - name: fct_orders
+    description: "One row per order, all statuses. Revenue recognized only for paid orders."
+    columns:
+      - name: order_id
+        data_tests: [unique, not_null]
+      - name: customer_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_customers')
+                field: customer_id
+      - name: recognized_revenue
+        data_tests: [not_null]
+  - name: fct_order_items
+    description: "One row per order line. Quantity times price; paid-only recognized revenue."
+    columns:
+      - name: order_item_id
+        data_tests: [unique, not_null]
+      - name: order_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('fct_orders')
+                field: order_id
+      - name: customer_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_customers')
+                field: customer_id
+      - name: product_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_products')
+                field: product_id
+      - name: recognized_revenue
+        data_tests: [not_null]

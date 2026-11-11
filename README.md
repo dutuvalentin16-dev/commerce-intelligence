@@ -4,8 +4,8 @@
 
 [![Python and dbt checks](https://github.com/dutuvalentin16-dev/commerce-intelligence/actions/workflows/ci.yml/badge.svg)](https://github.com/dutuvalentin16-dev/commerce-intelligence/actions/workflows/ci.yml)
 
-Local end-to-end verification completed on 2026-11-11: **10 dbt models, 32 dbt data
-tests and 10 Python tests passed** on PostgreSQL 16 / Python 3.11. CSV-to-mart
+Local end-to-end verification completed on 2026-11-11: **14 dbt models, 51 dbt data
+tests and 19 Python tests passed** on PostgreSQL 16 / Python 3.11. CSV-to-mart
 reconciliation and the dashboard's five displayed KPIs were verified. GitHub Actions
 also passed on Ubuntu / Python 3.11: [verified CI run](https://github.com/dutuvalentin16-dev/commerce-intelligence/actions/workflows/ci.yml).
 [Live demo](https://dutuvalentin16-dev.github.io/commerce-intelligence/) · [Source code](https://github.com/dutuvalentin16-dev/commerce-intelligence)
@@ -58,7 +58,8 @@ flowchart TD
     A[Synthetic CSV source] --> B[Python COPY ingestion]
     B --> C[(PostgreSQL raw schema)]
     C --> D[dbt staging views]
-    D --> E[dbt intermediate order model]
+    D --> S[dbt facts and dimensions]
+    S --> E[Order compatibility view]
     E --> F[dbt analytics marts]
     D --> F
     F --> G[Streamlit dashboard]
@@ -69,9 +70,9 @@ flowchart TD
 ```
 
 - **Source grain:** one row/customer, product, session, order or order item.
-- **Transformations:** staging models, order-level enrichment, daily/channel/category/repeat-customer marts.
+- **Transformations:** staging, two facts and two Type 1 dimensions, order compatibility view, daily/channel/category/repeat-customer marts.
 - **Checks:** unique and not-null IDs, relational consistency, acceptable statuses, revenue reconciliation and conversion-rate bounds.
-- **Idempotence:** re-ingesting the same CSV set replaces raw tables atomically in a single PostgreSQL transaction.
+- **Idempotence:** full replacement and incremental UPSERT both run atomically; repeating a batch preserves the same data.
 - **Limitations:** simple offline batch processing, no external API yet, no scheduling yet, no production secrets handling or end-user authentication.
 
 ## Quickstart (Windows, Mac or Linux)
@@ -166,21 +167,21 @@ The generator ensures a single order at most per session in its sample data, but
 | `commerce_pipeline/ingest.py` | Transactional CSV → PostgreSQL using COPY |
 | `sql/create_raw_tables.sql` | Keys, relationships, checks on source data |
 | `models/staging/` | Raw source normalization |
-| `models/intermediate/` | Order-grain enrichments |
+| `models/star/` | Order and order-item facts; current customer/product dimensions |
+| `models/intermediate/` | Backward-compatible order view |
 | `models/marts/` | Metrics for consumers (daily, category, channel, retention) |
 | `tests/` | Python unit tests + dbt reconciliation and grain tests |
 | `dashboard/` | Reporting workspace, semantic HTML tables and local SVG primitives |
-| `docs/` | Architecture choices, interviews, next implementation steps |
+| `docs/` | Architecture and reproducible demo documentation |
 | `.github/workflows/ci.yml` | Automated unit tests and dbt build in CI |
 
 ## Current scope and next iteration
 
-This version is a verified personal portfolio demo: full batch ingestion, tested dbt
+This version is a verified personal portfolio demo: full and incremental ingestion, dimensional models, tested dbt
 reporting, independent metric reconciliation, a reporting UI and automated CI. It can
 be explored through the public demo and reproduced locally using the documented setup.
 
-The next engineering milestones are dimensional facts/dimensions, a licensed public
-source, incremental loading with update semantics, and persisted run monitoring. API
+The next engineering milestones are a licensed public source and persisted run monitoring. API
 integration, Dagster, cohort analysis and anomaly detection remain future work. None
 of these capabilities is claimed by the current demo.
 
@@ -195,3 +196,34 @@ source reconciliation, automated tests and CI provide inspectable implementation
 ## Security and privacy
 
 Development-only database credentials are committed in Docker Compose for easy local setup; **never reuse them in production**. Do not commit `.env`, real client or employer data, API tokens, or production credentials.
+
+## Incremental batch contract
+
+`python -m commerce_pipeline.ingest --mode incremental --directory PATH` uses the
+same five CSV headers as full mode. Unchanged tables may contain only a header.
+Customers/products/sessions use primary-key UPSERT. Every included order must carry
+its **complete, nonempty current item list**; omitted old lines are deleted only for
+that order. Item IDs cannot move between orders. Duplicate batch keys are rejected.
+Foreign keys, monetary/quantity checks and order/session consistency fail the entire
+transaction. Writers are serialized using table locks. Orders omitted from a batch
+remain untouched; cancelled/refunded status updates preserve their history as rows.
+
+Reproduce new orders, updates, item additions/removals and idempotent reruns:
+
+```bash
+python -m commerce_pipeline.simulate_incremental
+python -m commerce_pipeline.ingest --directory data/incremental/baseline
+python -m commerce_pipeline.ingest --mode incremental --directory data/incremental/batch
+python -m commerce_pipeline.ingest --mode incremental --directory data/incremental/batch
+dbt build --profiles-dir .
+python -m commerce_pipeline.verify_metrics --directory data/incremental/expected
+# Restore the default dataset for the dashboard regression test / public export:
+python -m commerce_pipeline.ingest
+dbt build --profiles-dir .
+```
+
+The batch source is synthetic. There is no watermark/CDC or out-of-order version
+resolution: batches must be applied in source order. Entity deletion is unsupported
+apart from item replacement. dbt facts/marts rebuild fully; incremental **ingestion**
+does not imply incremental dbt materialization. Dimensions are Type 1 (current values),
+so product-cost/category updates restate estimated historical margins/breakdowns.
