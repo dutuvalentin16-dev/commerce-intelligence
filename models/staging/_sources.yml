@@ -1,0 +1,44 @@
+version: 2
+sources:
+  - name: commerce_raw
+    schema: raw
+    tables:
+      - name: customers
+        columns:
+          - name: customer_id
+            data_tests: [unique, not_null]
+      - name: products
+        columns:
+          - name: product_id
+            data_tests: [unique, not_null]
+      - name: sessions
+        columns:
+          - name: session_id
+            data_tests: [unique, not_null]
+          - name: customer_id
+            data_tests:
+              - relationships:
+                  arguments:
+                    to: source('commerce_raw', 'customers')
+                    field: customer_id
+      - name: orders
+        columns:
+          - name: order_id
+            data_tests: [unique, not_null]
+          - name: status
+            data_tests:
+              - accepted_values:
+                  arguments:
+                    values: ['paid', 'cancelled', 'refunded']
+          - name: session_id
+            data_tests: [unique, not_null]
+      - name: order_items
+        columns:
+          - name: order_item_id
+            data_tests: [unique, not_null]
+          - name: order_id
+            data_tests:
+              - relationships:
+                  arguments:
+                    to: source('commerce_raw', 'orders')
+                    field: order_id

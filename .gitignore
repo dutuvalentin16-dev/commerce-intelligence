@@ -1,0 +1,14 @@
+.env
+.venv/
+.venv311/
+.python/
+.uv-cache/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+*.pyc
+target/
+logs/
+dbt_packages/
+.DS_Store
+demo/data.json

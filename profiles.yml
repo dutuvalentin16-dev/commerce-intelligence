@@ -1,0 +1,12 @@
+commerce_intelligence:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: "{{ env_var('PGHOST', 'localhost') }}"
+      port: "{{ env_var('PGPORT', '5434') | int }}"
+      user: "{{ env_var('PGUSER', 'commerce') }}"
+      password: "{{ env_var('PGPASSWORD', 'commerce') }}"
+      dbname: "{{ env_var('PGDATABASE', 'commerce') }}"
+      schema: analytics
+      threads: 2

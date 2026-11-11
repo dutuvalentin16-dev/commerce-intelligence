@@ -1,0 +1,30 @@
+version: 2
+models:
+  - name: int_orders_enriched
+    description: One row per order, with recognized revenue. Cancelled/refunded orders contribute 0.
+    columns:
+      - name: order_id
+        data_tests: [unique, not_null]
+      - name: recognized_revenue
+        data_tests: [not_null]
+  - name: mart_daily_sales
+    description: Sales by UTC order date, excluding cancelled and refunded orders from revenue.
+    columns:
+      - name: order_date
+        data_tests: [unique, not_null]
+      - name: net_revenue
+        data_tests: [not_null]
+  - name: mart_channel_performance
+    description: Conversion is the fraction of sessions containing at least one PAID order.
+    columns:
+      - name: channel
+        data_tests: [unique, not_null]
+      - name: conversion_rate
+        data_tests: [not_null]
+  - name: mart_category_performance
+    description: Estimated product margin excludes shipping, taxes, returns handling and marketing cost.
+    columns:
+      - name: category
+        data_tests: [unique, not_null]
+  - name: mart_customer_repeat
+    description: One-row summary of customers with at least one paid purchase and repeat buyers.
